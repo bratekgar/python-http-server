@@ -1,36 +1,30 @@
-import socket
+from socket import socket, AF_INET, SOCK_STREAM
 
+serverSocket = socket(AF_INET, SOCK_STREAM)
+serverSocket.bind(('127.0.0.1', 5604))
+serverSocket.listen(1)
 
-def make_get_request(host):
-    # Create a socket object
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.settimeout(5)
-
-    # Connect to the host
-    client_socket.connect((host, 2137))
-
-    # Create the GET request
-    request = b"GET / HTTP/1.1\r\nHost: " + host.encode() + b"\r\n\r\n"
-
-    # Send the GET request
-    client_socket.sendall(request)
-
-    response = b""
+try:
     while True:
+        print("New request!")
+        connectionSocket, addr = serverSocket.accept()
         try:
-            data = client_socket.recv(4096)
-            if not data:
-                break
-            response += data
-        except socket.timeout:
-            break
+            message = connectionSocket.recv(1024)
+            endpoint = message.split()[1].decode('utf-8').strip("/")
+            connectionSocket.send('HTTP/1.0 200 OK\r\n\r\n'.encode())
+            print("endpoint:" + endpoint)
+            if endpoint == 'home':
+                connectionSocket.send('<h1>KURWAAAAAAAAAA</h1>'.encode())
 
-    client_socket.close()
+            if endpoint == '':
+                connectionSocket.send('<h1>JA PIDIDI ZABIJE SIE</h1>'.encode())
 
-    return response.decode('utf-8')
+        except IOError:
+            connectionSocket.send('404 Not Found'.encode())
 
+        finally:
+            connectionSocket.close()
 
-if __name__ == "__main__":
-    host = "www.google.com"
-    response = make_get_request(host)
-    print(response)
+except KeyboardInterrupt:
+    print("debilu dałeś ctr-c aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+    serverSocket.close()
