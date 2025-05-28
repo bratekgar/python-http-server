@@ -19,7 +19,6 @@ def handle_request(path):
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
     s.listen()
-    print(f"Serwer nasłuchuje na http://{HOST}:{PORT}")
     while True:
         conn, addr = s.accept()
         with conn:
@@ -33,9 +32,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 continue
             first_line = lines[0]
             method, path, _ = first_line.split()
-            print(f"Otrzymano żądanie: {method} {path}")
 
-            # WGenerating answer
+            # Generating answer
             body = handle_request(path)
             response = (
                 "HTTP/1.1 200 OK\r\n"
