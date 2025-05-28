@@ -27,7 +27,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             if not request:
                 continue
 
-            # Parsujemy pierwszą linię np. "GET / HTTP/1.1"
+            # Parse first line for eg. "GET / HTTP/1.1"
             lines = request.splitlines()
             if len(lines) == 0:
                 continue
@@ -35,7 +35,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             method, path, _ = first_line.split()
             print(f"Otrzymano żądanie: {method} {path}")
 
-            # Wygeneruj odpowiedź
+            # WGenerating answer
             body = handle_request(path)
             response = (
                 "HTTP/1.1 200 OK\r\n"
