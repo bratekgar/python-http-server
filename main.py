@@ -1,46 +1,36 @@
 import socket
 
-HOST = '127.0.0.1'
-PORT = 2137
 
-html_index = "<h1>Index</h1>"
-html_home = "<h1>Home</h1>"
+def make_get_request(host):
+    # Create a socket object
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.settimeout(5)
 
+    # Connect to the host
+    client_socket.connect((host, 2137))
 
-def handle_request(path):
-    if path == "/":
-        return html_index
-    elif path == "/home":
-        return html_home
-    else:
-        return "<h1>404 Not Found</h1>"
+    # Create the GET request
+    request = b"GET / HTTP/1.1\r\nHost: " + host.encode() + b"\r\n\r\n"
 
+    # Send the GET request
+    client_socket.sendall(request)
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.bind((HOST, PORT))
-    s.listen()
+    response = b""
     while True:
-        conn, addr = s.accept()
-        with conn:
-            request = conn.recv(1024).decode()
-            if not request:
-                continue
+        try:
+            data = client_socket.recv(4096)
+            if not data:
+                break
+            response += data
+        except socket.timeout:
+            break
 
-            # Parse first line for eg. "GET / HTTP/1.1"
-            lines = request.splitlines()
-            if len(lines) == 0:
-                continue
-            first_line = lines[0]
-            method, path, _ = first_line.split()
+    client_socket.close()
 
-            # Generating answer
-            body = handle_request(path)
-            response = (
-                "HTTP/1.1 200 OK\r\n"
-                "Content-Type: text/html\r\n"
-                f"Content-Length: {len(body)}\r\n"
-                "\r\n"
-                f"{body}"
-            )
+    return response.decode('utf-8')
 
-            conn.sendall(response.encode())
+
+if __name__ == "__main__":
+    host = "www.google.com"
+    response = make_get_request(host)
+    print(response)
